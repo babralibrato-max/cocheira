@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Animal - Cocheira{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4>{% if animal %}Editar Animal{% else %}Novo Animal{% endif %} - {{ cliente.nome }}</h4>
+    <a href="{% url 'cliente_detalhe' cliente.pk %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Voltar</a>
+</div>
+<div class="card" style="max-width: 600px;">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Nome *</label>
+                    {{ form.nome }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Espécie *</label>
+                    {{ form.especie }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Raça</label>
+                    {{ form.raca }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Cor/Pelagem</label>
+                    {{ form.cor }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Data de Nascimento</label>
+                    {{ form.data_nascimento }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Nº de Registro</label>
+                    {{ form.registro }}
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Observações</label>
+                    {{ form.observacoes }}
+                </div>
+            </div>
+            <hr>
+            <button type="submit" class="btn btn-success"><i class="bi bi-check-lg"></i> Salvar</button>
+            <a href="{% url 'cliente_detalhe' cliente.pk %}" class="btn btn-outline-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

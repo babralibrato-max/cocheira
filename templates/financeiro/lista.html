@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}Faturas - Cocheira{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4><i class="bi bi-receipt-cutoff"></i> Faturas</h4>
+    <div>
+        <a href="{% url 'fatura_gerar_mensal' %}" class="btn btn-outline-primary"><i class="bi bi-calendar-plus"></i> Gerar Mensal</a>
+        <a href="{% url 'fatura_nova' %}" class="btn btn-primary"><i class="bi bi-plus"></i> Nova Fatura</a>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-3">
+    <div class="card-body py-2">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-2">
+                <label class="form-label small">Mês</label>
+                <select name="mes" class="form-select form-select-sm">
+                    <option value="">Todos</option>
+                    {% for m in meses %}
+                    <option value="{{ m }}" {% if m|stringformat:"s" == mes %}selected{% endif %}>{{ m|stringformat:"02d" }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">Ano</label>
+                <select name="ano" class="form-select form-select-sm">
+                    {% for a in anos %}
+                    <option value="{{ a }}" {% if a|stringformat:"s" == ano %}selected{% endif %}>{{ a }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label small">Status</label>
+                <select name="status" class="form-select form-select-sm">
+                    <option value="">Todos</option>
+                    <option value="aberta" {% if status == 'aberta' %}selected{% endif %}>Aberta</option>
+                    <option value="paga" {% if status == 'paga' %}selected{% endif %}>Paga</option>
+                    <option value="vencida" {% if status == 'vencida' %}selected{% endif %}>Vencida</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-sm btn-primary w-100"><i class="bi bi-funnel"></i> Filtrar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Totais -->
+<div class="row g-2 mb-3">
+    <div class="col-md-4">
+        <div class="card border-warning">
+            <div class="card-body py-2 d-flex justify-content-between">
+                <span class="text-muted">Em aberto:</span>
+                <strong>R$ {{ total_aberto|floatformat:2 }}</strong>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card border-success">
+            <div class="card-body py-2 d-flex justify-content-between">
+                <span class="text-muted">Pago:</span>
+                <strong class="text-success">R$ {{ total_pago|floatformat:2 }}</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-dark">
+                <tr><th>Referência</th><th>Cliente</th><th>Animal</th><th>Vencimento</th><th>Aluguel</th><th>Insumos</th><th>Total</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for f in faturas %}
+                <tr>
+                    <td>{{ f.mes_referencia|stringformat:"02d" }}/{{ f.ano_referencia }}</td>
+                    <td>{{ f.contrato.cliente.nome }}</td>
+                    <td>{{ f.contrato.animal.nome }}</td>
+                    <td>{{ f.data_vencimento|date:"d/m/Y" }}</td>
+                    <td>R$ {{ f.valor_aluguel|floatformat:2 }}</td>
+                    <td>R$ {{ f.valor_insumos|floatformat:2 }}</td>
+                    <td><strong>R$ {{ f.valor_total|floatformat:2 }}</strong></td>
+                    <td><span class="badge badge-status-{{ f.status }}">{{ f.get_status_display }}</span></td>
+                    <td><a href="{% url 'fatura_detalhe' f.pk %}" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></a></td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="9" class="text-center text-muted py-4">Nenhuma fatura encontrada.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

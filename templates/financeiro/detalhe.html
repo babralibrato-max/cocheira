@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}Fatura - Cocheira{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4><i class="bi bi-receipt-cutoff"></i> Fatura {{ fatura.mes_referencia|stringformat:"02d" }}/{{ fatura.ano_referencia }}</h4>
+    <div>
+        {% if fatura.status == 'aberta' or fatura.status == 'vencida' %}
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalPagar">
+            <i class="bi bi-check-circle"></i> Registrar Pagamento
+        </button>
+        {% endif %}
+        <a href="{% url 'fatura_lista' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Voltar</a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-5">
+        <div class="card">
+            <div class="card-header fw-bold bg-dark text-white"><i class="bi bi-info-circle"></i> Resumo da Fatura</div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <tr><th>Referência</th><td>{{ fatura.mes_ano }}</td></tr>
+                    <tr><th>Cliente</th><td><a href="{% url 'cliente_detalhe' fatura.contrato.cliente.pk %}">{{ fatura.contrato.cliente.nome }}</a></td></tr>
+                    <tr><th>Animal</th><td>{{ fatura.contrato.animal.nome }}</td></tr>
+                    <tr><th>Contrato</th><td><a href="{% url 'contrato_detalhe' fatura.contrato.pk %}">{{ fatura.contrato.numero }}</a></td></tr>
+                    <tr><th>Vencimento</th><td>{{ fatura.data_vencimento|date:"d/m/Y" }}</td></tr>
+                    <tr><th>Status</th><td><span class="badge badge-status-{{ fatura.status }} fs-6">{{ fatura.get_status_display }}</span></td></tr>
+                    {% if fatura.data_pagamento %}
+                    <tr><th>Pago em</th><td>{{ fatura.data_pagamento|date:"d/m/Y" }}</td></tr>
+                    {% endif %}
+                </table>
+                <hr>
+                <table class="table table-sm">
+                    <tr><td>Aluguel</td><td class="text-end">R$ {{ fatura.valor_aluguel|floatformat:2 }}</td></tr>
+                    <tr><td>Insumos</td><td class="text-end">R$ {{ fatura.valor_insumos|floatformat:2 }}</td></tr>
+                    <tr class="table-dark"><th>TOTAL</th><th class="text-end">R$ {{ fatura.valor_total|floatformat:2 }}</th></tr>
+                </table>
+                {% if fatura.observacoes %}
+                <small class="text-muted">{{ fatura.observacoes }}</small>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        <div class="card">
+            <div class="card-header fw-bold bg-warning text-dark"><i class="bi bi-basket-fill"></i> Insumos Cobrados</div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead class="table-light"><tr><th>Data</th><th>Insumo</th><th>Qtd</th><th>Unit.</th><th>Total</th></tr></thead>
+                    <tbody>
+                        {% for l in fatura.lancamentos.all %}
+                        <tr>
+                            <td>{{ l.data|date:"d/m" }}</td>
+                            <td>{{ l.tipo_insumo.nome }}</td>
+                            <td>{{ l.quantidade }} {{ l.tipo_insumo.unidade }}</td>
+                            <td>R$ {{ l.preco_unitario|floatformat:2 }}</td>
+                            <td>R$ {{ l.total|floatformat:2 }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center text-muted py-3">Nenhum insumo lançado.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de pagamento -->
+<div class="modal fade" id="modalPagar" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <form method="post" action="{% url 'fatura_marcar_paga' fatura.pk %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Registrar Pagamento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <label class="form-label">Data do pagamento</label>
+                    <input type="date" name="data_pagamento" class="form-control"
+                           value="{% now 'Y-m-d' %}">
+                    <div class="mt-2 fw-bold text-success">
+                        Total: R$ {{ fatura.valor_total|floatformat:2 }}
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success w-100">
+                        <i class="bi bi-check-circle"></i> Confirmar Pagamento
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

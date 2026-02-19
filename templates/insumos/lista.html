@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}Insumos - Cocheira{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4><i class="bi bi-basket-fill"></i> Lançamentos de Insumos</h4>
+    <a href="{% url 'lancamento_novo' %}" class="btn btn-warning"><i class="bi bi-plus"></i> Novo Lançamento</a>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-3">
+    <div class="card-body py-2">
+        <form method="get" class="row g-2 align-items-end">
+            <div class="col-md-2">
+                <label class="form-label small">Mês</label>
+                <select name="mes" class="form-select form-select-sm">
+                    {% for m in meses %}
+                    <option value="{{ m }}" {% if m == mes %}selected{% endif %}>{{ m|stringformat:"02d" }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">Ano</label>
+                <select name="ano" class="form-select form-select-sm">
+                    {% for a in anos %}
+                    <option value="{{ a }}" {% if a == ano %}selected{% endif %}>{{ a }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label small">Contrato</label>
+                <select name="contrato" class="form-select form-select-sm">
+                    <option value="">Todos</option>
+                    {% for c in contratos %}
+                    <option value="{{ c.pk }}" {% if contrato_id == c.pk|stringformat:"s" %}selected{% endif %}>
+                        {{ c.cliente.nome }} - {{ c.animal.nome }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-sm btn-primary w-100"><i class="bi bi-funnel"></i> Filtrar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-dark">
+                <tr><th>Data</th><th>Cliente / Animal</th><th>Insumo</th><th>Qtd</th><th>Preço Unit.</th><th>Total</th><th>Faturado</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for l in lancamentos %}
+                <tr>
+                    <td>{{ l.data|date:"d/m/Y" }}</td>
+                    <td>{{ l.contrato.cliente.nome }} / {{ l.contrato.animal.nome }}</td>
+                    <td>{{ l.tipo_insumo.nome }}</td>
+                    <td>{{ l.quantidade }} {{ l.tipo_insumo.unidade }}</td>
+                    <td>R$ {{ l.preco_unitario|floatformat:2 }}</td>
+                    <td><strong>R$ {{ l.total|floatformat:2 }}</strong></td>
+                    <td>
+                        {% if l.faturado %}
+                        <span class="badge bg-success">Sim</span>
+                        {% else %}
+                        <span class="badge bg-secondary">Não</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if not l.faturado %}
+                        <a href="{% url 'lancamento_editar' l.pk %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+                        <a href="{% url 'lancamento_excluir' l.pk %}" class="btn btn-sm btn-outline-danger"
+                           onclick="return confirm('Confirmar exclusão?')"><i class="bi bi-trash"></i></a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-center text-muted py-4">Nenhum lançamento no período.</td></tr>
+                {% endfor %}
+            </tbody>
+            {% if lancamentos %}
+            <tfoot class="table-light">
+                <tr>
+                    <th colspan="5" class="text-end">Total do período:</th>
+                    <th>R$ {% widthratio 1 1 1 %}
+                        {% for l in lancamentos %}{{ l.total }}{% if not forloop.last %}+{% endif %}{% endfor %}
+                    </th>
+                    <th colspan="2"></th>
+                </tr>
+            </tfoot>
+            {% endif %}
+        </table>
+    </div>
+</div>
+{% endblock %}

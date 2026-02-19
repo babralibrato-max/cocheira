@@ -1,0 +1,5 @@
+django>=6.0
+reportlab
+pillow
+whitenoise
+gunicorn

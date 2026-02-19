@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard - Cocheira{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="mb-0"><i class="bi bi-speedometer2"></i> Dashboard</h4>
+    <small class="text-muted">Bem-vindo, {{ user.username }}</small>
+</div>
+
+<!-- Cards de resumo -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="card text-white" style="background: #3498db;">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="fs-2 fw-bold">{{ clientes_ativos }}</div>
+                    <div>Clientes Ativos</div>
+                </div>
+                <i class="bi bi-people-fill fs-1 opacity-50"></i>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a href="{% url 'cliente_lista' %}" class="text-white text-decoration-none small">Ver todos <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white" style="background: #27ae60;">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="fs-2 fw-bold">{{ contratos_ativos }}</div>
+                    <div>Contratos Ativos</div>
+                </div>
+                <i class="bi bi-file-earmark-check-fill fs-1 opacity-50"></i>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a href="{% url 'contrato_lista' %}" class="text-white text-decoration-none small">Ver todos <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white" style="background: {% if faturas_vencidas > 0 %}#e74c3c{% else %}#e67e22{% endif %};">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="fs-2 fw-bold">{{ faturas_abertas }}</div>
+                    <div>Faturas Abertas</div>
+                    {% if faturas_vencidas > 0 %}
+                    <small><i class="bi bi-exclamation-triangle"></i> {{ faturas_vencidas }} vencida(s)</small>
+                    {% endif %}
+                </div>
+                <i class="bi bi-receipt-cutoff fs-1 opacity-50"></i>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a href="{% url 'fatura_lista' %}?status=aberta" class="text-white text-decoration-none small">Ver faturas <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white" style="background: #8e44ad;">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="fs-2 fw-bold">R$ {{ receita_mes|floatformat:2 }}</div>
+                    <div>Recebido este mês</div>
+                </div>
+                <i class="bi bi-cash-stack fs-1 opacity-50"></i>
+            </div>
+            <div class="card-footer bg-transparent border-0">
+                <a href="{% url 'relatorio_mensal' %}" class="text-white text-decoration-none small">Ver relatório <i class="bi bi-arrow-right"></i></a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ações rápidas e últimas faturas -->
+<div class="row g-3">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-bold">
+                <i class="bi bi-lightning-charge-fill text-warning"></i> Ações Rápidas
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'cliente_novo' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-person-plus"></i> Novo Cliente
+                    </a>
+                    <a href="{% url 'contrato_novo' %}" class="btn btn-outline-success">
+                        <i class="bi bi-file-earmark-plus"></i> Novo Contrato
+                    </a>
+                    <a href="{% url 'lancamento_novo' %}" class="btn btn-outline-warning">
+                        <i class="bi bi-basket-plus"></i> Lançar Insumo
+                    </a>
+                    <a href="{% url 'fatura_gerar_mensal' %}" class="btn btn-outline-info">
+                        <i class="bi bi-calendar-plus"></i> Gerar Faturas do Mês
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-8">
+        <div class="card h-100">
+            <div class="card-header bg-white fw-bold">
+                <i class="bi bi-clock-history"></i> Últimas Faturas
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Cliente</th>
+                            <th>Referência</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fatura in ultimas_faturas %}
+                        <tr onclick="window.location='{% url 'fatura_detalhe' fatura.pk %}'" style="cursor:pointer;">
+                            <td>{{ fatura.contrato.cliente.nome }}</td>
+                            <td>{{ fatura.mes_referencia|stringformat:"02d" }}/{{ fatura.ano_referencia }}</td>
+                            <td>R$ {{ fatura.valor_total|floatformat:2 }}</td>
+                            <td><span class="badge badge-status-{{ fatura.status }}">{{ fatura.get_status_display }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-center text-muted py-3">Nenhuma fatura ainda</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

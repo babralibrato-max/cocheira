@@ -1,0 +1,235 @@
+{% extends 'base.html' %}
+{% block title %}{{ titulo }} - Cocheira{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4>{{ titulo }}</h4>
+    <a href="{% url 'contrato_lista' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Voltar</a>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    {{ formset.management_form }}
+
+    <div class="row g-3">
+        <!-- Dados do contrato -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header fw-bold bg-dark text-white">
+                    <i class="bi bi-file-earmark-text"></i> Dados do Contrato
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Cliente *</label>
+                            {{ form.cliente }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold">Animal *</label>
+                            {{ form.animal }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Tipo de Aluguel *</label>
+                            {{ form.tipo }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Local (Baia/Pasto)</label>
+                            {{ form.identificacao_local }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Status</label>
+                            {{ form.status }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-bold">Data de Início *</label>
+                            {{ form.data_inicio }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Data de Término</label>
+                            {{ form.data_fim }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Dia de Vencimento</label>
+                            {{ form.dia_vencimento }}
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Cláusulas Adicionais</label>
+                            {{ form.clausulas_extras }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Itens que compõem o valor mensal -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header fw-bold bg-success text-white d-flex justify-content-between align-items-center">
+                    <span><i class="bi bi-list-check"></i> Composição do Valor Mensal</span>
+                    <button type="button" class="btn btn-sm btn-light" id="btn-add-item">
+                        <i class="bi bi-plus-circle"></i> Adicionar Item
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-sm mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width:160px">Categoria</th>
+                                <th>Descrição</th>
+                                <th style="width:90px">Qtd</th>
+                                <th style="width:85px">Unidade</th>
+                                <th style="width:120px">Valor Unit. (R$)</th>
+                                <th style="width:115px">Subtotal</th>
+                                <th style="width:42px"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="itens-tbody">
+                            {% for item_form in formset %}
+                            <tr class="item-row">
+                                {% for hidden in item_form.hidden_fields %}{{ hidden }}{% endfor %}
+                                <td>{{ item_form.categoria }}</td>
+                                <td>{{ item_form.descricao }}</td>
+                                <td>{{ item_form.quantidade }}</td>
+                                <td>{{ item_form.unidade }}</td>
+                                <td>{{ item_form.valor_unitario }}</td>
+                                <td>
+                                    <input type="text" class="form-control form-control-sm item-subtotal" readonly
+                                           value="{% if item_form.instance.pk %}R$ {{ item_form.instance.subtotal|floatformat:2 }}{% else %}R$ 0,00{% endif %}">
+                                </td>
+                                <td class="text-center">
+                                    {% if formset.can_delete %}
+                                    <div class="d-none">{{ item_form.DELETE }}</div>
+                                    {% endif %}
+                                    <button type="button" class="btn btn-sm btn-outline-danger btn-remove-item">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="table-light">
+                            <tr>
+                                <td colspan="5" class="text-end fw-bold pe-3">TOTAL MENSAL:</td>
+                                <td>
+                                    <input type="text" id="total-mensal"
+                                           class="form-control form-control-sm fw-bold text-success" readonly>
+                                </td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 pb-3">
+            <button type="submit" class="btn btn-success px-4">
+                <i class="bi bi-check-lg"></i> Salvar Contrato
+            </button>
+            <a href="{% url 'contrato_lista' %}" class="btn btn-outline-secondary">Cancelar</a>
+        </div>
+    </div>
+</form>
+
+<!-- Template de nova linha (JS clona) -->
+<template id="item-template">
+    <tr class="item-row">
+        <td>
+            <input type="hidden" name="itens-__prefix__-id" value="">
+            <select name="itens-__prefix__-categoria" class="form-select form-select-sm">
+                <option value="aluguel">Aluguel</option>
+                <option value="racao">Ração</option>
+                <option value="feno">Feno</option>
+                <option value="serragem">Serragem</option>
+                <option value="servico">Serviço / Mão de obra</option>
+                <option value="outro">Outro</option>
+            </select>
+        </td>
+        <td><input type="text" name="itens-__prefix__-descricao" class="form-control form-control-sm" placeholder="Descreva o item..."></td>
+        <td><input type="number" name="itens-__prefix__-quantidade" class="form-control form-control-sm" value="1" step="0.001" min="0"></td>
+        <td><input type="text" name="itens-__prefix__-unidade" class="form-control form-control-sm" value="mês"></td>
+        <td><input type="number" name="itens-__prefix__-valor_unitario" class="form-control form-control-sm" step="0.01" min="0" placeholder="0,00"></td>
+        <td><input type="text" class="form-control form-control-sm item-subtotal" readonly value="R$ 0,00"></td>
+        <td class="text-center">
+            <input type="checkbox" name="itens-__prefix__-DELETE" class="d-none item-delete-check">
+            <button type="button" class="btn btn-sm btn-outline-danger btn-remove-item">
+                <i class="bi bi-trash"></i>
+            </button>
+        </td>
+    </tr>
+</template>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Filtra animais pelo cliente
+document.getElementById('id_cliente').addEventListener('change', function() {
+    var clienteId = this.value;
+    if (!clienteId) return;
+    fetch('/contratos/ajax/animais/?cliente_id=' + clienteId)
+        .then(r => r.json())
+        .then(data => {
+            var sel = document.getElementById('id_animal');
+            sel.innerHTML = '<option value="">---------</option>';
+            data.animais.forEach(a => {
+                sel.innerHTML += '<option value="' + a.id + '">' + a.nome + '</option>';
+            });
+        });
+});
+
+// Calcula subtotal de uma linha
+function calcularLinha(row) {
+    var qtdEl = row.querySelector('[name*="-quantidade"]');
+    var valEl = row.querySelector('[name*="-valor_unitario"]');
+    var subEl = row.querySelector('.item-subtotal');
+    if (!qtdEl || !valEl || !subEl) return 0;
+    var qtd = parseFloat(qtdEl.value) || 0;
+    var val = parseFloat(valEl.value) || 0;
+    var sub = qtd * val;
+    subEl.value = 'R$ ' + sub.toFixed(2).replace('.', ',');
+    return sub;
+}
+
+// Recalcula total geral
+function calcularTotal() {
+    var total = 0;
+    document.querySelectorAll('#itens-tbody .item-row:not(.d-none)').forEach(row => {
+        total += calcularLinha(row);
+    });
+    document.getElementById('total-mensal').value = 'R$ ' + total.toFixed(2).replace('.', ',');
+}
+
+// Listener nos inputs de qtd e valor
+document.getElementById('itens-tbody').addEventListener('input', function(e) {
+    if (e.target.name && (e.target.name.includes('quantidade') || e.target.name.includes('valor_unitario'))) {
+        calcularTotal();
+    }
+});
+
+// Adicionar nova linha
+var totalForms = document.querySelector('[name="itens-TOTAL_FORMS"]');
+document.getElementById('btn-add-item').addEventListener('click', function() {
+    var idx = parseInt(totalForms.value);
+    var html = document.getElementById('item-template').innerHTML.replace(/__prefix__/g, idx);
+    document.getElementById('itens-tbody').insertAdjacentHTML('beforeend', html);
+    totalForms.value = idx + 1;
+});
+
+// Remover linha
+document.getElementById('itens-tbody').addEventListener('click', function(e) {
+    var btn = e.target.closest('.btn-remove-item');
+    if (!btn) return;
+    var row = btn.closest('.item-row');
+    var chk = row.querySelector('.item-delete-check');
+    if (chk) {
+        chk.checked = true;
+        row.classList.add('d-none');
+    } else {
+        row.remove();
+    }
+    calcularTotal();
+});
+
+// Calcula ao carregar (para edição)
+calcularTotal();
+</script>
+{% endblock %}

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Cocheira{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background-color: #f4f6f9; }
+        .sidebar { min-height: 100vh; background: #2c3e50; color: white; }
+        .sidebar .nav-link { color: #bdc3c7; padding: 10px 20px; }
+        .sidebar .nav-link:hover, .sidebar .nav-link.active { color: white; background: rgba(255,255,255,0.1); border-radius: 5px; }
+        .sidebar .nav-link i { margin-right: 8px; }
+        .sidebar-brand { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .main-content { padding: 20px; }
+        .card { border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-radius: 10px; }
+        .card-header { border-radius: 10px 10px 0 0 !important; }
+        .badge-status-ativo { background-color: #27ae60; }
+        .badge-status-encerrado { background-color: #95a5a6; }
+        .badge-status-suspenso { background-color: #e67e22; }
+        .badge-status-aberta { background-color: #3498db; }
+        .badge-status-paga { background-color: #27ae60; }
+        .badge-status-vencida { background-color: #e74c3c; }
+        .badge-status-cancelada { background-color: #95a5a6; }
+        .nav-section { font-size: 0.7rem; text-transform: uppercase; color: #7f8c8d; padding: 15px 20px 5px; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row">
+        {% if user.is_authenticated %}
+        <!-- Sidebar -->
+        <div class="col-md-2 sidebar p-0">
+            <div class="sidebar-brand">
+                <h5 class="mb-0"><i class="bi bi-house-heart-fill"></i> Cocheira</h5>
+                <small class="text-muted">Sistema de Gestão</small>
+            </div>
+            <nav class="py-2">
+                <div class="nav-section">Principal</div>
+                <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <i class="bi bi-speedometer2"></i> Dashboard
+                </a>
+
+                <div class="nav-section">Cadastros</div>
+                <a href="{% url 'cliente_lista' %}" class="nav-link {% if 'cliente' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="bi bi-people-fill"></i> Clientes
+                </a>
+                <a href="{% url 'contrato_lista' %}" class="nav-link {% if 'contrato' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="bi bi-file-earmark-text-fill"></i> Contratos
+                </a>
+
+                <div class="nav-section">Operações</div>
+                <a href="{% url 'lancamento_lista' %}" class="nav-link {% if 'lancamento' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="bi bi-basket-fill"></i> Insumos
+                </a>
+                <a href="{% url 'tipo_insumo_lista' %}" class="nav-link">
+                    <i class="bi bi-tags-fill"></i> Tipos de Insumo
+                </a>
+
+                <div class="nav-section">Financeiro</div>
+                <a href="{% url 'fatura_lista' %}" class="nav-link {% if 'fatura' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="bi bi-receipt-cutoff"></i> Faturas
+                </a>
+                <a href="{% url 'fatura_gerar_mensal' %}" class="nav-link">
+                    <i class="bi bi-calendar-plus-fill"></i> Gerar Mensal
+                </a>
+                <a href="{% url 'relatorio_mensal' %}" class="nav-link">
+                    <i class="bi bi-bar-chart-fill"></i> Relatório
+                </a>
+
+                <div class="nav-section">Sistema</div>
+                <a href="{% url 'logout' %}" class="nav-link">
+                    <i class="bi bi-box-arrow-right"></i> Sair
+                </a>
+            </nav>
+        </div>
+
+        <!-- Conteúdo principal -->
+        <div class="col-md-10 main-content">
+        {% else %}
+        <div class="col-12">
+        {% endif %}
+
+            {% if messages %}
+            <div class="mt-2">
+                {% for msg in messages %}
+                <div class="alert alert-{% if msg.tags == 'error' %}danger{% else %}{{ msg.tags }}{% endif %} alert-dismissible fade show" role="alert">
+                    {{ msg }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

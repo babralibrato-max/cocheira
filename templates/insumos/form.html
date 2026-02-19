@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}{{ titulo }} - Cocheira{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4>{{ titulo }}</h4>
+    <a href="{% url 'lancamento_lista' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left"></i> Voltar</a>
+</div>
+<div class="card" style="max-width: 600px;">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label fw-bold">Contrato *</label>
+                    {{ form.contrato }}
+                </div>
+                <div class="col-md-8">
+                    <label class="form-label fw-bold">Insumo *</label>
+                    {{ form.tipo_insumo }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Data *</label>
+                    {{ form.data }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Quantidade *</label>
+                    {{ form.quantidade }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Preço Unitário (R$) *</label>
+                    {{ form.preco_unitario }}
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Total</label>
+                    <input type="text" id="total_preview" class="form-control" readonly placeholder="Calculado automaticamente">
+                </div>
+                <div class="col-12">
+                    <label class="form-label">Observação</label>
+                    {{ form.observacao }}
+                </div>
+            </div>
+            <hr>
+            <button type="submit" class="btn btn-warning"><i class="bi bi-check-lg"></i> Salvar</button>
+            <a href="{% url 'lancamento_lista' %}" class="btn btn-outline-secondary">Cancelar</a>
+        </form>
+    </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+// Preenche preço ao selecionar insumo
+document.getElementById('id_tipo_insumo').addEventListener('change', function() {
+    var tipoId = this.value;
+    if (!tipoId) return;
+    fetch('/insumos/ajax/preco/?tipo_id=' + tipoId)
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('id_preco_unitario').value = data.preco;
+            calcTotal();
+        });
+});
+
+function calcTotal() {
+    var qtd = parseFloat(document.querySelector('[name=quantidade]').value) || 0;
+    var preco = parseFloat(document.getElementById('id_preco_unitario').value) || 0;
+    document.getElementById('total_preview').value = 'R$ ' + (qtd * preco).toFixed(2);
+}
+
+document.querySelector('[name=quantidade]').addEventListener('input', calcTotal);
+document.getElementById('id_preco_unitario').addEventListener('input', calcTotal);
+</script>
+{% endblock %}

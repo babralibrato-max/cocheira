@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% block title %}{{ cliente.nome }} - Cocheira{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4><i class="bi bi-person-fill"></i> {{ cliente.nome }}</h4>
+    <div>
+        <a href="{% url 'cliente_editar' cliente.pk %}" class="btn btn-outline-secondary">
+            <i class="bi bi-pencil"></i> Editar
+        </a>
+        <a href="{% url 'contrato_novo' %}?cliente={{ cliente.pk }}" class="btn btn-success">
+            <i class="bi bi-file-earmark-plus"></i> Novo Contrato
+        </a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <!-- Dados pessoais -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header fw-bold bg-primary text-white">
+                <i class="bi bi-person-vcard"></i> Dados Pessoais
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <tr><th>CPF</th><td>{{ cliente.cpf }}</td></tr>
+                    <tr><th>RG</th><td>{{ cliente.rg|default:"-" }}</td></tr>
+                    <tr><th>Telefone</th><td>{{ cliente.telefone }}</td></tr>
+                    <tr><th>E-mail</th><td>{{ cliente.email|default:"-" }}</td></tr>
+                    <tr><th>Endereço</th><td>{{ cliente.endereco|default:"-" }}</td></tr>
+                    <tr><th>Cidade/UF</th><td>{{ cliente.cidade }}/{{ cliente.estado }}</td></tr>
+                    <tr><th>CEP</th><td>{{ cliente.cep|default:"-" }}</td></tr>
+                    <tr><th>Cadastrado em</th><td>{{ cliente.data_cadastro|date:"d/m/Y" }}</td></tr>
+                </table>
+                {% if cliente.observacoes %}
+                <hr>
+                <small class="text-muted">{{ cliente.observacoes }}</small>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Animais -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header fw-bold bg-success text-white d-flex justify-content-between">
+                <span><i class="bi bi-emoji-smile"></i> Animais</span>
+                <a href="{% url 'animal_novo' cliente.pk %}" class="btn btn-sm btn-light">
+                    <i class="bi bi-plus"></i> Novo
+                </a>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead class="table-light"><tr><th>Nome</th><th>Espécie</th><th>Raça</th><th></th></tr></thead>
+                    <tbody>
+                        {% for animal in cliente.animais.all %}
+                        <tr>
+                            <td class="fw-bold">{{ animal.nome }}</td>
+                            <td>{{ animal.get_especie_display }}</td>
+                            <td>{{ animal.raca|default:"-" }}</td>
+                            <td><a href="{% url 'animal_editar' animal.pk %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a></td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="4" class="text-center text-muted py-3">Nenhum animal cadastrado.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contratos -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header fw-bold bg-dark text-white d-flex justify-content-between">
+                <span><i class="bi bi-file-earmark-text"></i> Contratos</span>
+                <a href="{% url 'contrato_novo' %}?cliente={{ cliente.pk }}" class="btn btn-sm btn-light">
+                    <i class="bi bi-plus"></i> Novo
+                </a>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-sm mb-0">
+                    <thead class="table-light">
+                        <tr><th>Nº</th><th>Animal</th><th>Tipo</th><th>Local</th><th>Início</th><th>Valor/mês</th><th>Status</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        {% for contrato in cliente.contratos.all %}
+                        <tr>
+                            <td>{{ contrato.numero }}</td>
+                            <td>{{ contrato.animal.nome }}</td>
+                            <td>{{ contrato.get_tipo_display }}</td>
+                            <td>{{ contrato.identificacao_local|default:"-" }}</td>
+                            <td>{{ contrato.data_inicio|date:"d/m/Y" }}</td>
+                            <td>R$ {{ contrato.valor_mensal|floatformat:2 }}</td>
+                            <td><span class="badge badge-status-{{ contrato.status }}">{{ contrato.get_status_display }}</span></td>
+                            <td>
+                                <a href="{% url 'contrato_detalhe' contrato.pk %}" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></a>
+                                <a href="{% url 'contrato_pdf' contrato.pk %}" class="btn btn-sm btn-outline-danger" target="_blank"><i class="bi bi-filetype-pdf"></i></a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="8" class="text-center text-muted py-3">Nenhum contrato.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Clientes - Cocheira{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4><i class="bi bi-people-fill"></i> Clientes</h4>
+    <a href="{% url 'cliente_novo' %}" class="btn btn-primary">
+        <i class="bi bi-person-plus"></i> Novo Cliente
+    </a>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body py-2">
+        <form method="get" class="d-flex gap-2">
+            <input type="text" name="q" value="{{ query }}" class="form-control" placeholder="Buscar por nome...">
+            <button class="btn btn-outline-secondary"><i class="bi bi-search"></i></button>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-dark">
+                <tr>
+                    <th>Nome</th>
+                    <th>CPF</th>
+                    <th>Telefone</th>
+                    <th>Cidade</th>
+                    <th>Animais</th>
+                    <th>Contratos</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cliente in clientes %}
+                <tr>
+                    <td><a href="{% url 'cliente_detalhe' cliente.pk %}" class="text-decoration-none fw-bold">{{ cliente.nome }}</a></td>
+                    <td>{{ cliente.cpf }}</td>
+                    <td>{{ cliente.telefone }}</td>
+                    <td>{{ cliente.cidade }}/{{ cliente.estado }}</td>
+                    <td><span class="badge bg-secondary">{{ cliente.animais.count }}</span></td>
+                    <td><span class="badge bg-primary">{{ cliente.contratos.count }}</span></td>
+                    <td>
+                        <a href="{% url 'cliente_detalhe' cliente.pk %}" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></a>
+                        <a href="{% url 'cliente_editar' cliente.pk %}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="7" class="text-center text-muted py-4">Nenhum cliente encontrado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

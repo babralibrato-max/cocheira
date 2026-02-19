@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block title %}Contratos - Cocheira{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4><i class="bi bi-file-earmark-text-fill"></i> Contratos</h4>
+    <a href="{% url 'contrato_novo' %}" class="btn btn-success"><i class="bi bi-plus"></i> Novo Contrato</a>
+</div>
+
+<div class="card mb-3">
+    <div class="card-body py-2">
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="?status=ativo" class="btn btn-sm {% if status == 'ativo' %}btn-success{% else %}btn-outline-success{% endif %}">Ativos</a>
+            <a href="?status=encerrado" class="btn btn-sm {% if status == 'encerrado' %}btn-secondary{% else %}btn-outline-secondary{% endif %}">Encerrados</a>
+            <a href="?status=suspenso" class="btn btn-sm {% if status == 'suspenso' %}btn-warning{% else %}btn-outline-warning{% endif %}">Suspensos</a>
+            <a href="?" class="btn btn-sm btn-outline-dark">Todos</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+            <thead class="table-dark">
+                <tr><th>Nº</th><th>Cliente</th><th>Animal</th><th>Tipo</th><th>Local</th><th>Início</th><th>Valor/mês</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for c in contratos %}
+                <tr>
+                    <td><strong>{{ c.numero }}</strong></td>
+                    <td><a href="{% url 'cliente_detalhe' c.cliente.pk %}" class="text-decoration-none">{{ c.cliente.nome }}</a></td>
+                    <td>{{ c.animal.nome }}</td>
+                    <td>{{ c.get_tipo_display }}</td>
+                    <td>{{ c.identificacao_local|default:"-" }}</td>
+                    <td>{{ c.data_inicio|date:"d/m/Y" }}</td>
+                    <td>R$ {{ c.valor_mensal|floatformat:2 }}</td>
+                    <td><span class="badge badge-status-{{ c.status }}">{{ c.get_status_display }}</span></td>
+                    <td>
+                        <a href="{% url 'contrato_detalhe' c.pk %}" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></a>
+                        <a href="{% url 'contrato_pdf' c.pk %}" class="btn btn-sm btn-outline-danger" target="_blank"><i class="bi bi-filetype-pdf"></i></a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="9" class="text-center text-muted py-4">Nenhum contrato encontrado.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
