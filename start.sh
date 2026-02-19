@@ -14,5 +14,5 @@ else:
     print('Superusuario ja existe.')
 "
 
-echo "=== Iniciando servidor ==="
-gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
+echo "=== Iniciando servidor na porta $PORT ==="
+exec gunicorn config.wsgi:application --bind "0.0.0.0:${PORT:-10000}" --workers 2 --timeout 120
