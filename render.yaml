@@ -3,7 +3,7 @@ services:
     name: cocheira
     runtime: python
     buildCommand: "pip install -r requirements.txt && python manage.py collectstatic --no-input"
-    startCommand: "python manage.py migrate --run-syncdb && python manage.py shell -c \"from django.contrib.auth.models import User; User.objects.filter(username='admin').exists() or User.objects.create_superuser('admin','admin@cocheira.com','admin123')\" && gunicorn config.wsgi:application"
+    startCommand: "bash start.sh"
     envVars:
       - key: SECRET_KEY
         generateValue: true
