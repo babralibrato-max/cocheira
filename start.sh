@@ -15,4 +15,4 @@ else:
 "
 
 echo "=== Iniciando servidor ==="
-gunicorn config.wsgi:application
+gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
